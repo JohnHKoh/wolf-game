@@ -345,8 +345,8 @@ $(function(){
         let j = 1;
         Object.keys(usersAndRoles).forEach(function(key) {
             $("#playerCards").append(
-                '            <div class="col-2">\n' +
-                '                <div class="card h-100" id="hiddenPlayer' + i + '" data-target="#playerImg' + i + '" style="background-color: unset; border: unset;">\n' +
+                '            <div class="col-3 col-md-2">\n' +
+                '                <div class="card" id="hiddenPlayer' + i + '" data-target="#playerImg' + i + '" style="background-color: unset; border: unset;">\n' +
                 '                    <img class="card-img" id="playerImg' + i + '" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">\n' +
                 '                    <div class="card-img-overlay">\n' +
                 '                    </div><p id="playerCard' + i + '"class="text-white mt-1 text-center"></p>\n' +
