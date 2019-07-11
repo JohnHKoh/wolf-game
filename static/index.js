@@ -301,6 +301,7 @@ $(function(){
         else {
             var txt = $("#choosing");
             txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+            txt.removeClass('blink');
             var cards = $("#middleCards");
             var hidden = $("[id*='hidden']");
             hidden.css('display', 'flex');
