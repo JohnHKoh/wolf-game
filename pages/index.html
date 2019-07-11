@@ -32,10 +32,12 @@
 </head>
 <body>
 <div class="container" id="main" style="display: none;">
-    <div class="col-sm-12 text-center mb-5"></div>
-    <div class="col-sm-12 text-center mb-5"></div>
-    <div class="col-sm-12 text-center mb-5"></div>
-    <div class="col-lg-12 text-center">
+    <div class="d-none d-lg-block">
+        <div class="col-lg-12 text-center mb-5"></div>
+        <div class="col-lg-12 text-center mb-5"></div>
+        <div class="col-lg-12 text-center mb-5"></div>
+    </div>
+    <div class="col-12 text-center">
         <hr class="mt-5">
         <h1 class="text-white mt-3">A Bootstrap 4 Starter Template</h1>
         <p class="text-white lead">Complete with pre-defined file paths and responsive navigation!</p>
@@ -111,10 +113,12 @@
     </div>
 </div>
 <div class="container" id="game" style="display: none;">
-    <div class="col-sm-12 text-center mb-5"></div>
-    <div class="col-sm-12 text-center mb-5"></div>
-    <div class="col-sm-12 text-center mb-5"></div>
-    <div class="col-lg-12 text-center">
+    <div class="d-none d-lg-block">
+        <div class="col-lg-12 text-center mb-5"></div>
+        <div class="col-lg-12 text-center mb-5"></div>
+        <div class="col-lg-12 text-center mb-5"></div>
+    </div>
+    <div class="col-12 text-center">
         <hr class="mt-5">
         <h1 class="text-white mt-3" id="roomCode">Game</h1>
         <p class="text-white lead" style="margin-bottom: 0;">Complete with pre-defined file paths and responsive navigation!</p>
@@ -158,22 +162,22 @@
     </div>
 
     <div class="collapse" id="middleCards">
-        <div class="row justify-content-center mb-5">
-            <div class="col-3 col-md-2">
+        <div class="row justify-content-center" >
+            <div class="col-4 col-md-2">
                 <div class="card" id="hidden1" data-target="#middleCard1" style="background-color: unset; border: unset;">
                     <img class="card-img" id="middleCard1" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">
                     <div class="card-img-overlay">
                     </div>
                 </div>
             </div>
-            <div class="col-3 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="card" id="hidden2" data-target="#middleCard2" style="background-color: unset; border: unset;">
                     <img class="card-img" id="middleCard2" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">
                     <div class="card-img-overlay">
                     </div>
                 </div>
             </div>
-            <div class="col-3 col-md-2">
+            <div class="col-4 col-md-2">
                 <div class="card" id="hidden3" data-target="#middleCard3" style="background-color: unset; border: unset;">
                     <img class="card-img" id="middleCard3" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">
                     <div class="card-img-overlay">
@@ -181,15 +185,20 @@
                 </div>
             </div>
         </div>
-        <div class="row justify-content-center mt-5 mb-5" style="height:180px;" id="playerCards">
+        <div class="row justify-content-center mt-5" id="playerCards">
         </div>
     </div>
 
-    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#leaveModal">
-        Leave
-    </button>
 
-    <!-- Modal -->
+    <div class="mt-3 mb-3">
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#leaveModal">
+            Leave
+        </button>
+        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#endModal">
+            End Game
+        </button>
+    </div>
+
     <div class="modal fade" id="leaveModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -199,6 +208,20 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" id="leave">Leave</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="endModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    End the current game? (This cannot be undone)
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="end">End</button>
                 </div>
             </div>
         </div>

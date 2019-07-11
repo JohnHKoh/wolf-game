@@ -301,16 +301,15 @@ $(function(){
         else {
             var txt = $("#choosing");
             txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
-            txt.removeClass('blink');
-            txt.css({"color":"white", "display": "none"});
-            txt.fadeIn(1000);
             var cards = $("#middleCards");
             var hidden = $("[id*='hidden']");
-            cards.collapse();
             hidden.css('display', 'flex');
             showPlayerCards(usersAndRoles);
+            cards.collapse();
+            cards.on('shown.bs.collapse', function() {
+                hidden.fadeIn(1200);
+            });
         }
-
     });
 
     function displayRolesAnim(usersAndRoles) {
@@ -326,14 +325,13 @@ $(function(){
             setTimeout(function() {
                 var cards = $("#middleCards");
                 var hidden = $("[id*='hidden']");
-                hidden.css('display', 'none');
+                hidden.css('display', 'flex');
+                showPlayerCards(usersAndRoles);
                 cards.collapse();
                 cards.on('shown.bs.collapse', function() {
                     hidden.fadeIn(1200);
                 });
-                setTimeout(function() {
-                    showPlayerCards(usersAndRoles)
-                }, 1000);
+
 
             }, 1000);
 
@@ -345,8 +343,8 @@ $(function(){
         let j = 1;
         Object.keys(usersAndRoles).forEach(function(key) {
             $("#playerCards").append(
-                '            <div class="col-3 col-md-2">\n' +
-                '                <div class="card" id="hiddenPlayer' + i + '" data-target="#playerImg' + i + '" style="background-color: unset; border: unset;">\n' +
+                '            <div class="col-4 col-md-2">\n' +
+                '                <div class="card" id="hiddenPlayer' + i + '" data-target="#playerImg' + i + '" style="background-color: unset; border: unset; visibility: hidden">\n' +
                 '                    <img class="card-img" id="playerImg' + i + '" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">\n' +
                 '                    <div class="card-img-overlay">\n' +
                 '                    </div><p id="playerCard' + i + '"class="text-white mt-1 text-center"></p>\n' +
@@ -355,7 +353,7 @@ $(function(){
             );
             $('#playerCard' + i).text(key);
             setTimeout(function() {
-                $("#hiddenPlayer" + j).fadeIn(500);
+                $("#hiddenPlayer" + j).css({opacity: 0.0, visibility: "visible"}).animate({opacity: 1.0}, 500);
                 j++;
             }, i*200);
             i++;
