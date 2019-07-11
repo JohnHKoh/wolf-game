@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wolf</title>
+    <script
+            src="https://kit.fontawesome.com/d0ff21e051.js"></script>
+    <script
+            src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            crossorigin="anonymous">
+    <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+            integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous"></script>
+    <script
+            src="/socket.io/socket.io.js"></script>
+    <script
+            src="/index.js"></script>
+    <link
+            href="/my.css" rel="stylesheet">
+</head>
+<body>
+<div class="container" id="main" style="display: none;">
+    <div class="col-sm-12 text-center mb-5"></div>
+    <div class="col-sm-12 text-center mb-5"></div>
+    <div class="col-sm-12 text-center mb-5"></div>
+    <div class="col-lg-12 text-center">
+        <hr class="mt-5">
+        <h1 class="text-white mt-3">A Bootstrap 4 Starter Template</h1>
+        <p class="text-white lead">Complete with pre-defined file paths and responsive navigation!</p>
+        <div id="opts">
+            <button class="btn btn-outline-light btn-lg mr-3" data-target="#create" id="createRoom">Create Room</button>
+            <button class="btn btn-outline-light btn-lg ml-3" data-target="#join" id="joinRoom">Join Room</button>
+            <div class="collapse" id="create" data-parent="#opts">
+                <div class="col-lg-6 offset-lg-3">
+                    <div class="card card-body mt-3">
+                        <div class="pb-3">Create Room</div>
+                        <form class="text-right" id="createForm">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                </div>
+                                <input type="text" id="name" class="form-control" placeholder="Name" maxlength="30">
+                                <div class="invalid-feedback text-left ml-5">
+                                    Please choose a name.
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                </div>
+                                <input type="password" id="password" class="form-control" placeholder="Password (Optional)" maxlength="20">
+                            </div>
+                            <input type="submit" class="btn btn-primary" value="Create">
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="collapse" id="join" data-parent="#opts">
+                <div class="col-lg-6 offset-lg-3">
+                    <div class="card card-body mt-3">
+                        <div class="pb-3">Join Room</div>
+                        <form class="text-right" id="joinForm">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                </div>
+                                <input type="text" id="name2" class="form-control" placeholder="Name" maxlength="30">
+                                <div class="invalid-feedback text-left ml-5" id="nameFeedback">
+                                    Please choose a name.
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-hashtag"></i></span>
+                                </div>
+                                <input type="text" id="code" class="form-control" placeholder="Room Code" maxlength="4">
+                                <div class="invalid-feedback text-left ml-5" id="codeFeedback">
+                                    Error.
+                                </div>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                </div>
+                                <input type="password" id="pass2" class="form-control" placeholder="Password" maxlength="20">
+                            </div>
+                            <input type="submit" class="btn btn-primary" value="Join">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="col-lg-12 text-center mt-5">
+        <a href="/help" class="text-muted">Help</a>
+        <a class="text-muted"> | </a>
+        <a href="/about" class="text-muted">About</a>
+    </div>
+</div>
+<div class="container" id="game" style="display: none;">
+    <div class="col-sm-12 text-center mb-5"></div>
+    <div class="col-sm-12 text-center mb-5"></div>
+    <div class="col-sm-12 text-center mb-5"></div>
+    <div class="col-lg-12 text-center">
+        <hr class="mt-5">
+        <h1 class="text-white mt-3" id="roomCode">Game</h1>
+        <p class="text-white lead" style="margin-bottom: 0;">Complete with pre-defined file paths and responsive navigation!</p>
+        <div id="userRow">
+            <div class="row justify-content-center" style="margin-top: 1rem;">
+                <div class="col-5"><ul class="list-group" id="users"></ul></div>
+            </div>
+        </div>
+
+    </div>
+    <hr>
+    <div class="row justify-content-center" >
+        <div class="col-3" style="min-width: 350px" >
+            <p id="choosing" class="text-center lead blink">Host is choosing roles...</p>
+            <div id="collapseForm">
+                <div class="card card-body pt-3" id="roleForm">
+                    <div class="text-center pb-3">Enter Roles</div>
+                    <div id="roleGroups">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">Players</label>
+                            <div class="col-sm-7">
+                                <input type="text" readonly class="form-control-plaintext text-center" id="playerCount" value="0">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label" id="roleLabel">Roles</label>
+                            <div class="col-sm-7">
+                                <input type="text" readonly class="form-control-plaintext text-center" id="roleCount" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <input type="submit" class="btn btn-primary" value="Start" id="startGame" title="Role count must be exactly three more than player count." disabled>
+                    </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="collapse" id="middleCards">
+        <div class="row justify-content-center mb-5">
+            <div class="col-2">
+                <div class="card h-100" id="hidden1" data-target="#middleCard1" style="background-color: unset; border: unset;">
+                    <img class="card-img" id="middleCard1" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">
+                    <div class="card-img-overlay">
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="card h-100" id="hidden2" data-target="#middleCard2" style="background-color: unset; border: unset;">
+                    <img class="card-img" id="middleCard2" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">
+                    <div class="card-img-overlay">
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="card h-100" id="hidden3" data-target="#middleCard3" style="background-color: unset; border: unset;">
+                    <img class="card-img" id="middleCard3" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">
+                    <div class="card-img-overlay">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-5 mb-5" style="height:180px;" id="playerCards">
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#leaveModal">
+        Leave
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="leaveModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    Are you sure you want to leave this room? (You will not be able to rejoin the game if it has already started)
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="leave">Leave</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

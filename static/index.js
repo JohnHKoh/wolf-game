@@ -1,0 +1,368 @@
+$(function(){
+
+    var socket = io();
+    var curUser;
+    var curCode;
+    var roles = {
+        "Villagers":"Villager",
+        "Werewolves": "Werewolf",
+        "Tanners":"Tanner",
+        "Seers":"Seer"
+    };
+
+
+    if (window.location.pathname !== "/" &&
+        window.location.pathname !== "/help" &&
+        window.location.pathname !== "/about") {
+        if (window.location.pathname.substr(1).match(/^[A-z0-9]{4}$/)) {
+            let code = window.location.pathname.substr(1);
+            curCode = code;
+            socket.emit('codeLinkFollowed', code);
+        }
+        else {
+            window.location.pathname = "/";
+        }
+    }
+    else {
+        $("#main").delay(250).fadeIn(1000);
+    }
+
+    function blink_text() {
+        $('.blink').fadeOut(500);
+        $('.blink').fadeIn(500);
+    }
+    setInterval(blink_text, 2500);
+
+    Object.keys(roles).forEach(function(role) {
+        $("#roleGroups").append(
+            '<div class="form-group row">\n' +
+            '                        <label class="col-sm-5 col-form-label">' + role + '</label>\n' +
+            '                        <div class="col-sm-7">\n' +
+            '                            <div class="input-group">\n' +
+            '                                <span class="input-group-btn">\n' +
+            '                                    <button type="button" class="btn btn-default btn-number" disabled="disabled" data-type="minus" data-field="' + role + 'Count">\n' +
+            '                                    <span class="fa fa-minus"></span>\n' +
+            '                                    </button>\n' +
+            '                                </span>\n' +
+            '                                <input type="text" name="' + role + 'Count" class="form-control input-number text-center" value="0" data-set="totalCount">\n' +
+            '                                <span class="input-group-btn">\n' +
+            '                                    <button type="button" class="btn btn-default btn-number" data-type="plus" data-field="' + role + 'Count">\n' +
+            '                                    <span class="fa fa-plus"></span>\n' +
+            '                                    </button>\n' +
+            '                                </span>\n' +
+            '                            </div>\n' +
+            '                        </div>\n' +
+            '                    </div>'
+        )
+    });
+
+
+    $("#createRoom, #joinRoom").on("click", function()
+    {
+        // Don't do anything when some element is in the collapsing transition.
+        if ($(".collapsing").length > 0) return;
+
+        let toggled = $(":button.active");
+        $(this).button('toggle');
+
+        let target = $(this).data('target');
+        let others = $(".collapse.show:not(" + target + ")");
+
+
+        if (others.length > 0)
+        {
+            $(toggled).button('toggle');
+            others.collapse("hide").one("hidden.bs.collapse", function()
+            {
+                $(target).collapse("show");
+            });
+        }
+        else
+        {
+            $(target).collapse('toggle');
+        }
+    });
+
+    $("#createForm").on("submit", function(e) {
+        e.preventDefault();
+        $("form#joinForm :input").each(function() {
+            $(this).removeClass("is-invalid");
+        });
+        var name = $("#name").val();
+        if (name === "") {
+            $("#name").addClass("is-invalid");
+        }
+        else {
+            $("#name").removeClass("is-invalid");
+        }
+        if ($(".is-invalid").length > 0) return;
+        socket.emit('createRoom', name);
+    });
+
+    $("#joinForm").on("submit", function(e) {
+        e.preventDefault();
+        $("form#createForm :input").each(function() {
+            $(this).removeClass("is-invalid");
+        });
+        let name = $("#name2");
+        let code = $("#code");
+        if (name.val() === "") {
+            $("#nameFeedback").text('Please choose a name.');
+            name.addClass("is-invalid");
+        }
+        else {
+            name.removeClass("is-invalid");
+        }
+        if (code.val().length < 4) {
+            $("#codeFeedback").text('Invalid room code.');
+            code.addClass("is-invalid");
+        }
+        else {
+            code.removeClass("is-invalid");
+        }
+        if ($(".is-invalid").length > 0) return;
+        name = name.val();
+        code = code.val();
+        socket.emit('joinRoom', code, name);
+    });
+
+    $("#leave").on("click", function() {
+        $("#game").fadeOut(1000, function() {
+            socket.emit('leaveRoom');
+            window.location.pathname = "/";
+        });
+    });
+
+    $('.btn-number').on("click", function(e){
+        e.preventDefault();
+
+        let fieldName = $(this).attr('data-field');
+        let type      = $(this).attr('data-type');
+        let input = $("input[name='"+fieldName+"']");
+        let roleCounts = 0;
+        $("input[data-set='totalCount']").each(function() {
+            roleCounts += parseInt($(this).val(), 10);
+        });
+        let currentVal = parseInt(input.val(), 10);
+        let roleCount = $('#roleCount');
+        if (!isNaN(currentVal)) {
+            if(type === 'minus') {
+
+                if(currentVal > 0) {
+                    input.val(currentVal - 1).trigger('change');
+                    roleCount.val(roleCounts - 1).trigger('change');
+                }
+                if(parseInt(input.val()) === 0) {
+                    $(this).prop('disabled', true);
+                }
+
+            } else if(type === 'plus') {
+                input.val(currentVal + 1).trigger('change');
+                roleCount.val(roleCounts + 1).trigger('change');
+            }
+        } else {
+            input.val(0);
+        }
+
+    });
+
+    $('.input-number').on('change', function() {
+        let valueCurrent = parseInt($(this).val(), 10);
+
+        let name = $(this).attr('name');
+        if(valueCurrent >= 0) {
+            $(".btn-number[data-type='minus'][data-field='"+name+"']").removeAttr('disabled')
+        }
+    });
+    $(".input-number").on('keydown', function (e) {
+        e.preventDefault();
+    });
+    $('#roleCount').on('change', function() {
+        let color = 'black';
+        let roleCount = parseInt($(this).val(), 10);
+        let playerCount = parseInt($('#playerCount').val(), 10);
+        if (roleCount > playerCount + 3) {
+            color = 'red';
+        }
+        if (roleCount !== playerCount + 3) {
+            $('#startGame').prop('disabled', true);
+            $("#startGame").attr('title', 'Role count must be exactly three more than player count.');
+        }
+        else {
+            $('#startGame').prop('disabled', false);
+            $("#startGame").removeAttr('title');
+        }
+        $('#roleLabel, #roleCount').css('color', color);
+    });
+
+    $("#startGame").on("click", function() {
+        var form = $("#collapseForm");
+        form.addClass("collapse show");
+        form.collapse("hide");
+        form.on('hidden.bs.collapse', function() {
+            var values = {};
+            $.each($('.input-number').serializeArray(), function(i, field) {
+                values[field.name] = field.value;
+            });
+            socket.emit('startGame', curCode);
+            socket.emit('assignRoles', values, curCode);
+        });
+
+    });
+
+    $(document).on("click", "[id*='hidden']", function() {
+        $($(this).data('target')).toggleClass("imgGlow");
+    });
+
+    socket.on('rolesChosen', function() {
+        var txt = $("#choosing");
+        txt.text('Roles chosen!');
+        txt.removeClass('blink');
+        txt.css('color', 'white');
+    });
+
+    socket.on('newJoiner', function(code) {
+        $("#main").delay(250).fadeIn(1000);
+        $("#joinRoom").trigger("click");
+        $("#code").val(code);
+    });
+
+    socket.on('roomJoined', function(code, name, host, started) {
+        history.pushState(null, null, code);
+        curUser = name;
+        curCode = code;
+        if (started) {
+            $("#roomCode").text(code);
+            $("#main").css('display', 'none');
+            $("#roleForm").css('display', 'none');
+            socket.emit('getRoles', code);
+            $("#game").fadeIn(1000);
+        }
+        else {
+            $("#main").fadeOut(1000, function() {
+                $("#roomCode").text(code);
+                if (name !== host) $("#roleForm").css('display', 'none');
+                $("#game").fadeIn(1000);
+            });
+        }
+
+    });
+
+    socket.on('updateUsers', function(room) {
+        var list = $('#users');
+        $('#playerCount').val(room.users.length);
+        $('#roleCount').trigger('change');
+        list.empty();
+        room.users.forEach(function(user) {
+            var item = $('<li class="list-group-item">');
+            item.text(user);
+            if (user === curUser) {
+                item.append($('<span>').css('color', 'grey').text(' (You)'));
+            }
+            if (user === room.host) {
+                item.prepend('<i class="fa fa-crown">&nbsp;');
+            }
+            list.append(item);
+        });
+    });
+
+    socket.on('nameTaken', function() {
+        $("#nameFeedback").text('Name is already in use.');
+        $("#name2").addClass("is-invalid");
+    });
+
+    socket.on('noSuchRoom', function() {
+        if (!$("#main").is(':visible')) {
+            $("#main").delay(250).fadeIn(1000);
+            $("#joinRoom").trigger("click");
+        }
+        $("#codeFeedback").text('Room does not exist.');
+        $("#code").addClass("is-invalid");
+        $("#code").val(curCode);
+    });
+
+    socket.on('gameAlreadyStarted', function() {
+        $("#codeFeedback").text('This game has already begun.');
+        $("#code").addClass("is-invalid");
+    });
+
+    socket.on('alreadyInRoom', function() {
+        if (!$("#main").is(':visible')) {
+            $("#main").delay(250).fadeIn(1000);
+            $("#joinRoom").trigger("click");
+        }
+        $("#codeFeedback").text("You are already in a game. Please leave the game before joining a new one.");
+        $("#code").addClass("is-invalid");
+    });
+
+
+    socket.on('displayRoles', function(usersAndRoles, middleRoles, anim) {
+        if (anim) displayRolesAnim(usersAndRoles);
+        else {
+            var txt = $("#choosing");
+            txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+            txt.removeClass('blink');
+            txt.css({"color":"white", "display": "none"});
+            txt.fadeIn(1000);
+            var cards = $("#middleCards");
+            var hidden = $("[id*='hidden']");
+            cards.collapse();
+            hidden.css('display', 'flex');
+            showPlayerCards(usersAndRoles);
+        }
+
+    });
+
+    function displayRolesAnim(usersAndRoles) {
+        var txt = $("#choosing");
+        setTimeout(function() {
+            //var users = $("#userRow");
+            //users.addClass("collapse show");
+            //users.collapse("hide");
+            txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+            txt.removeClass('blink');
+            txt.css({"color":"white", "display": "none"});
+            txt.fadeIn(1000);
+            setTimeout(function() {
+                var cards = $("#middleCards");
+                var hidden = $("[id*='hidden']");
+                hidden.css('display', 'none');
+                cards.collapse();
+                cards.on('shown.bs.collapse', function() {
+                    hidden.fadeIn(1200);
+                });
+                setTimeout(function() {
+                    showPlayerCards(usersAndRoles)
+                }, 1000);
+
+            }, 1000);
+
+        }, 1500)
+    }
+
+    function showPlayerCards(usersAndRoles) {
+        let i = 1;
+        let j = 1;
+        Object.keys(usersAndRoles).forEach(function(key) {
+            $("#playerCards").append(
+                '            <div class="col-2">\n' +
+                '                <div class="card h-100" id="hiddenPlayer' + i + '" data-target="#playerImg' + i + '" style="background-color: unset; border: unset;">\n' +
+                '                    <img class="card-img" id="playerImg' + i + '" src="https://i.imgur.com/8NKNBHL.png" alt="Card image">\n' +
+                '                    <div class="card-img-overlay">\n' +
+                '                    </div><p id="playerCard' + i + '"class="text-white mt-1 text-center"></p>\n' +
+                '                </div>\n' +
+                '            </div>'
+            );
+            $('#playerCard' + i).text(key);
+            setTimeout(function() {
+                $("#hiddenPlayer" + j).fadeIn(500);
+                j++;
+            }, i*200);
+            i++;
+        })
+    }
+
+});
+
+
+

@@ -1,0 +1,63 @@
+html, body {
+    height: 100%; width: 100%;
+    padding: 0; margin: 0;
+}
+
+/*body {*/
+/*    background: url('https://static1.squarespace.com/static/571a52302b8ddeff9736e96c/t/5c1a7bed032be4e8052e1e30/1545239550031/green-treeline-1.jpg') repeat-x bottom center;*/
+/*}*/
+
+/*body {*/
+/*    background-image:*/
+/*            url('https://static1.squarespace.com/static/571a52302b8ddeff9736e96c/t/5c1a7bed032be4e8052e1e30/1545239550031/green-treeline-1.jpg'),*/
+/*            url('https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/N69pMl5/stars-rotating-north-pole-star-night-sky-polaris-time-lapse_hglvfkca_thumbnail-full01.png');*/
+/*    background-position:*/
+/*            bottom center;*/
+/*    background-repeat:*/
+/*            repeat-x,*/
+/*            no-repeat;*/
+/*}*/
+
+body {
+    background-color: black;
+    /*background-image: url('https://www.wallpaperflare.com/static/836/26/543/stars-silhouette-night-sky-trees-wallpaper.jpg');*/
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-size: cover;
+}
+
+hr { display: block; height: 1px;
+    border: 0; border-top: 1px solid #ccc;
+    margin: 1em 0; padding: 0; }
+
+
+.blink {
+    color: white;
+}
+
+.boxGlow {
+    transition: box-shadow 300ms;
+    box-shadow: 0 0 8px 8px rgba(255, 255, 255, 0.4), 0 0 8px 8px rgba(255, 255, 255, 0.4);
+}
+
+.imgGlow {
+    -webkit-transition: all 300ms;
+    -moz-transition: all 300ms;
+    -o-transition: all 300ms;
+    transition:all 300ms;
+    -webkit-filter: drop-shadow(1px 1px 8px white)
+    drop-shadow(-1px -1px 8px white);
+    filter: drop-shadow(1px 1px 8px white)
+    drop-shadow(-1px -1px 8px white);
+}
+
+.card-img {
+    -webkit-transition: all 300ms;
+    -moz-transition: all 300ms;
+    -o-transition: all 300ms;
+    transition:all 300ms;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    user-select: none; /* Non-prefixed version, currently */
+}
