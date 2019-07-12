@@ -244,7 +244,7 @@ $(function(){
             $("#main").fadeOut(1000, function() {
                 $('#choosing').addClass('blink');
                 $("#roomCode").text(code);
-                if (name !== host) $("#collapseForm").css('display', 'none');
+                if (name !== host) $("#collapseForm").removeClass('show');
                 $("#game").fadeIn(1000);
             });
         }
@@ -267,6 +267,10 @@ $(function(){
             }
             list.append(item);
         });
+        if (curUser === room.host) {
+            var form = $("#collapseForm");
+            form.collapse('show');
+        }
     });
 
     socket.on('nameTaken', function() {
