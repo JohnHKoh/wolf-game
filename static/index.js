@@ -66,7 +66,7 @@ $(function(){
         $(this).button('toggle');
 
         let target = $(this).data('target');
-        let others = $(".collapse.show:not(" + target + ")");
+        let others = $(":visible.collapse.show:not(" + target + ")");
 
 
         if (others.length > 0)
@@ -133,6 +133,10 @@ $(function(){
         });
     });
 
+    $("#end").on("click", function() {
+        socket.emit('endGame', curCode);
+    });
+
     $('.btn-number').on("click", function(e){
         e.preventDefault();
 
@@ -197,16 +201,13 @@ $(function(){
 
     $("#startGame").on("click", function() {
         var form = $("#collapseForm");
-        form.addClass("collapse show");
         form.collapse("hide");
-        form.on('hidden.bs.collapse', function() {
-            var values = {};
-            $.each($('.input-number').serializeArray(), function(i, field) {
-                values[field.name] = field.value;
-            });
-            socket.emit('startGame', curCode);
-            socket.emit('assignRoles', values, curCode);
+        var values = {};
+        $.each($('.input-number').serializeArray(), function(i, field) {
+            values[field.name] = field.value;
         });
+        socket.emit('startGame', curCode);
+        socket.emit('assignRoles', values, curCode);
 
     });
 
@@ -216,9 +217,10 @@ $(function(){
 
     socket.on('rolesChosen', function() {
         var txt = $("#choosing");
-        txt.text('Roles chosen!');
         txt.removeClass('blink');
-        txt.css('color', 'white');
+        txt.finish();
+        txt.text('Roles chosen!');
+        txt.css({'color': 'white'});
     });
 
     socket.on('newJoiner', function(code) {
@@ -234,14 +236,15 @@ $(function(){
         if (started) {
             $("#roomCode").text(code);
             $("#main").css('display', 'none');
-            $("#roleForm").css('display', 'none');
+            $("#collapseForm").removeClass('show');
             socket.emit('getRoles', code);
             $("#game").fadeIn(1000);
         }
         else {
             $("#main").fadeOut(1000, function() {
+                $('#choosing').addClass('blink');
                 $("#roomCode").text(code);
-                if (name !== host) $("#roleForm").css('display', 'none');
+                if (name !== host) $("#collapseForm").css('display', 'none');
                 $("#game").fadeIn(1000);
             });
         }
@@ -302,25 +305,36 @@ $(function(){
             var txt = $("#choosing");
             txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
             txt.removeClass('blink');
-            txt.css({"color":"white", "display": "none"});
-            txt.fadeIn(1000);
+            txt.css({"color":"white"});
             var cards = $("#middleCards");
             var hidden = $("[id*='hidden']");
             hidden.css('display', 'flex');
             showPlayerCards(usersAndRoles);
-            cards.collapse();
-            cards.on('shown.bs.collapse', function() {
-                hidden.fadeIn(1200);
-            });
+            cards.addClass('show');
+            hidden.fadeIn(1200);
+            $('#endButton').css('display', 'inline-block')
         }
+    });
+
+    socket.on('endGame', function() {
+        $('#endButton').fadeOut();
+        var cards = $('#middleCards');
+        cards.collapse('hide');
+        var txt = $('#choosing');
+        txt.text('Host has ended the game.');
+        cards.on('hidden.bs.collapse', function() {
+            setTimeout(function() {
+                var form = $("#collapseForm");
+                form.collapse('show');
+                txt.addClass('blink');
+                txt.text('Host is choosing roles...');
+            }, 1500);
+        });
     });
 
     function displayRolesAnim(usersAndRoles) {
         var txt = $("#choosing");
         setTimeout(function() {
-            //var users = $("#userRow");
-            //users.addClass("collapse show");
-            //users.collapse("hide");
             txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
             txt.removeClass('blink');
             txt.css({"color":"white", "display": "none"});
@@ -330,9 +344,10 @@ $(function(){
                 var hidden = $("[id*='hidden']");
                 hidden.css('display', 'flex');
                 showPlayerCards(usersAndRoles);
-                cards.collapse();
+                cards.collapse('show');
                 cards.on('shown.bs.collapse', function() {
                     hidden.fadeIn(1200);
+                    $('#endButton').fadeIn();
                 });
 
 
@@ -344,6 +359,7 @@ $(function(){
     function showPlayerCards(usersAndRoles) {
         let i = 1;
         let j = 1;
+        $("#playerCards").html('');
         Object.keys(usersAndRoles).forEach(function(key) {
             $("#playerCards").append(
                 '            <div class="col-4 col-md-2">\n' +

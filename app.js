@@ -98,6 +98,11 @@ io.on('connection', function(socket){
         leaveRoom();
     });
 
+    socket.on('endGame', function(code) {
+        rooms[code].started = false;
+        io.to(code).emit('endGame');
+    });
+
     socket.on('codeLinkFollowed', function(code) {
         if (socket.handshake.session.username) {
             if (rooms[code] && rooms[code].users.indexOf(socket.handshake.session.username) === -1) {
@@ -136,6 +141,7 @@ io.on('connection', function(socket){
                 values[key]--;
             }
         });
+        shuffle(rolesArray);
         for (let i = 0; i < users.length; i++) {
             usersAndRoles[users[i]] = rolesArray[i];
         }

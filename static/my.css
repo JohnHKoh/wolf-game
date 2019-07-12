@@ -35,11 +35,6 @@ hr { display: block; height: 1px;
     color: white;
 }
 
-.boxGlow {
-    transition: box-shadow 300ms;
-    box-shadow: 0 0 8px 8px rgba(255, 255, 255, 0.4), 0 0 8px 8px rgba(255, 255, 255, 0.4);
-}
-
 .imgGlow {
     -webkit-filter: drop-shadow(1px 1px 8px white)
     drop-shadow(-1px -1px 8px white);
