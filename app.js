@@ -148,11 +148,11 @@ io.on('connection', function(socket){
         rooms[code].usersAndRoles = usersAndRoles;
         var middleRoles = rolesArray.slice(users.length);
         rooms[code].middleRoles = middleRoles;
-        io.to(code).emit('displayRoles', usersAndRoles, middleRoles, true);
+        io.to(code).emit('displayRoles', usersAndRoles, middleRoles, rooms[code].host, true);
     });
 
     socket.on('getRoles', function(code) {
-        socket.emit('displayRoles', rooms[code].usersAndRoles, rooms[code].middleRoles, false);
+        socket.emit('displayRoles', rooms[code].usersAndRoles, rooms[code].middleRoles, rooms[code].host, false);
     });
 
     function joinRoom(code, name) {

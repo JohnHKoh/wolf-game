@@ -299,8 +299,30 @@ $(function(){
     });
 
 
-    socket.on('displayRoles', function(usersAndRoles, middleRoles, anim) {
-        if (anim) displayRolesAnim(usersAndRoles);
+    socket.on('displayRoles', function(usersAndRoles, middleRoles, host, anim) {
+        if (anim) {
+            var txt = $("#choosing");
+            setTimeout(function() {
+                txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+                txt.removeClass('blink');
+                txt.css({"color":"white", "display": "none"});
+                txt.fadeIn(1000);
+                setTimeout(function() {
+                    var cards = $("#middleCards");
+                    var hidden = $("[id*='hidden']");
+                    hidden.css('display', 'flex');
+                    showPlayerCards(usersAndRoles);
+                    cards.collapse('show');
+                    cards.on('shown.bs.collapse', function() {
+                        hidden.fadeIn(1200);
+                        if (curUser === host) $('#endButton').fadeIn();
+                    });
+
+
+                }, 1000);
+
+            }, 1500)
+        }
         else {
             var txt = $("#choosing");
             txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
@@ -312,7 +334,7 @@ $(function(){
             showPlayerCards(usersAndRoles);
             cards.addClass('show');
             hidden.fadeIn(1200);
-            $('#endButton').css('display', 'inline-block')
+            if (curUser === host) $('#endButton').css('display', 'inline-block')
         }
     });
 
@@ -331,30 +353,6 @@ $(function(){
             }, 1500);
         });
     });
-
-    function displayRolesAnim(usersAndRoles) {
-        var txt = $("#choosing");
-        setTimeout(function() {
-            txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
-            txt.removeClass('blink');
-            txt.css({"color":"white", "display": "none"});
-            txt.fadeIn(1000);
-            setTimeout(function() {
-                var cards = $("#middleCards");
-                var hidden = $("[id*='hidden']");
-                hidden.css('display', 'flex');
-                showPlayerCards(usersAndRoles);
-                cards.collapse('show');
-                cards.on('shown.bs.collapse', function() {
-                    hidden.fadeIn(1200);
-                    $('#endButton').fadeIn();
-                });
-
-
-            }, 1000);
-
-        }, 1500)
-    }
 
     function showPlayerCards(usersAndRoles) {
         let i = 1;
