@@ -51,3 +51,7 @@ hr { display: block; height: 1px;
     -moz-user-select: none; /* Firefox */
     user-select: none; /* Non-prefixed version, currently */
 }
+
+.card {
+    cursor: pointer;
+}
