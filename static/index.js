@@ -213,6 +213,7 @@ $(function(){
 
     $(document).on("click", "[id*='hidden']", function() {
         $($(this).data('target')).toggleClass("imgGlow");
+        $('<style></style>').appendTo($(document.body)).remove();
     });
 
     socket.on('rolesChosen', function() {

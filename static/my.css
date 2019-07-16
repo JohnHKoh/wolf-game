@@ -61,7 +61,6 @@ hr { display: block; height: 1px;
     drop-shadow(-1px -1px 8px white);
     filter: drop-shadow(1px 1px 8px white)
     drop-shadow(-1px -1px 8px white);
-    -webkit-backface-visibility: hidden;
 }
 
 .card-img {
@@ -72,7 +71,6 @@ hr { display: block; height: 1px;
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none; /* Firefox */
     user-select: none; /* Non-prefixed version, currently */
-    -webkit-backface-visibility: hidden;
 }
 
 .card {
