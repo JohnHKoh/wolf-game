@@ -28,6 +28,17 @@ body {
     min-width: 450px;
 }
 
+@media (max-width: 450px) {
+    body {
+        background-color: black;
+        /*background-image: url('https://www.wallpaperflare.com/static/836/26/543/stars-silhouette-night-sky-trees-wallpaper.jpg');*/
+        background-repeat: no-repeat;
+        background-position: bottom center;
+        background-size: cover;
+        width: 100%;
+    }
+}
+
 hr { display: block; height: 1px;
     border: 0; border-top: 1px solid #ccc;
     margin: 1em 0; padding: 0; }
