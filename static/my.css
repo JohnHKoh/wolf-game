@@ -71,6 +71,7 @@ hr { display: block; height: 1px;
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none; /* Firefox */
     user-select: none; /* Non-prefixed version, currently */
+    -webkit-backface-visibility: hidden;
 }
 
 .card {
