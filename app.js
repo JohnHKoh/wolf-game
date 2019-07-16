@@ -175,7 +175,7 @@ io.on('connection', function(socket){
         console.log('%s joined room %s', name, code);
         socket.join(code);
         socket.emit('roomJoined', code, name, rooms[code].host, rooms[code].started);
-        io.to(code).emit('updateUsers', rooms[code]);
+        io.to(code).emit('updateUsers', rooms[code], rooms[code].started);
     }
 
     function leaveRoom() {
@@ -197,7 +197,7 @@ io.on('connection', function(socket){
             if (name === room.host) {
                 room.host = room.users[0];
             }
-            io.to(code).emit('updateUsers', rooms[code]);
+            io.to(code).emit('updateUsers', rooms[code], rooms[code].started);
         }
     }
 });

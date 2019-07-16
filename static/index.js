@@ -251,7 +251,7 @@ $(function(){
 
     });
 
-    socket.on('updateUsers', function(room) {
+    socket.on('updateUsers', function(room, started) {
         var list = $('#users');
         $('#playerCount').val(room.users.length);
         $('#roleCount').trigger('change');
@@ -269,7 +269,7 @@ $(function(){
         });
         if (curUser === room.host) {
             var form = $("#collapseForm");
-            form.collapse('show');
+            if (!started) form.collapse('show');
         }
     });
 
