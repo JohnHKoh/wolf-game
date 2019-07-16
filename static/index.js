@@ -36,8 +36,8 @@ $(function(){
     Object.keys(roles).forEach(function(role) {
         $("#roleGroups").append(
             '<div class="form-group row">\n' +
-            '                        <label class="col-sm-5 col-form-label">' + role + '</label>\n' +
-            '                        <div class="col-sm-7">\n' +
+            '                        <label class="col-5 col-form-label">' + role + '</label>\n' +
+            '                        <div class="col-7">\n' +
             '                            <div class="input-group">\n' +
             '                                <span class="input-group-btn">\n' +
             '                                    <button type="button" class="btn btn-default btn-number" disabled="disabled" data-type="minus" data-field="' + role + 'Count">\n' +

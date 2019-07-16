@@ -130,22 +130,27 @@
 
     </div>
     <hr>
-    <div class="row justify-content-center" >
-        <div class="col-3" style="min-width: 350px" >
+    <div class="row justify-content-center">
+        <div class="col-10 col-sm-8 col-md-6 col-lg-4">
             <p id="choosing" class="text-center lead">Host is choosing roles...</p>
             <div class="collapse" id="collapseForm">
                 <div class="card card-body pt-3" id="roleForm">
                     <div class="text-center pb-3">Enter Roles</div>
+                    <div class="d-none d-xl-block">xl</div>
+                    <div class="d-none d-lg-block d-xl-none">lg</div>
+                    <div class="d-none d-md-block d-lg-none">md</div>
+                    <div class="d-none d-sm-block d-md-none">sm</div>
+                    <div class="d-block d-sm-none">xs</div>
                     <div id="roleGroups">
                         <div class="form-group row">
-                            <label class="col-sm-5 col-form-label">Players</label>
-                            <div class="col-sm-7">
+                            <label class="col-5 col-form-label">Players</label>
+                            <div class="col-7">
                                 <input type="text" readonly class="form-control-plaintext text-center" id="playerCount" value="0">
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-5 col-form-label" id="roleLabel">Roles</label>
-                            <div class="col-sm-7">
+                            <label class="col-5 col-form-label" id="roleLabel">Roles</label>
+                            <div class="col-7">
                                 <input type="text" readonly class="form-control-plaintext text-center" id="roleCount" value="0">
                             </div>
                         </div>
