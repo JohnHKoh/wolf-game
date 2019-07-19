@@ -217,6 +217,10 @@ $(function(){
         $($(this).data('target')).toggleClass("imgGlow");
     });
 
+    $(document).on("click", "#showRole", function() {
+        $("#role").toggleClass('invisible');
+    });
+
     socket.on('rolesChosen', function() {
         var txt = $("#choosing");
         txt.removeClass('blink');
@@ -308,11 +312,14 @@ $(function(){
 
 
     socket.on('displayRoles', function(usersAndRoles, middleRoles, host, anim) {
+        var txt = $("#choosing");
+        var role = $("#role");
+        var group = $("#choosingGroup");
         if (anim) {
-            var txt = $("#choosing");
             setTimeout(function() {
-                txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]] + ' ');
-                txt.append('<i class="fas fa-eye"></i>')
+                txt.text(curUser + ', you are a ');
+                role.text(roles[usersAndRoles[curUser]]);
+                group.append('<i id="showRole" class="fas fa-eye"></i>');
                 txt.removeClass('blink');
                 txt.css({"color":"white", "display": "none"});
                 txt.fadeIn(1000);
@@ -333,8 +340,9 @@ $(function(){
             }, 1500)
         }
         else {
-            var txt = $("#choosing");
-            txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+            txt.text(curUser + ', you are a ');
+            role.text(roles[usersAndRoles[curUser]]);
+            group.append('<i id="showRole" class="fas fa-eye"></i>');
             txt.removeClass('blink');
             txt.css({"color":"white"});
             var cards = $("#middleCards");

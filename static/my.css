@@ -80,3 +80,11 @@ hr { display: block; height: 1px;
 .col-form-label {
     white-space:nowrap;
 }
+
+.fa-eye {
+    color: white;
+}
+
+.invisible {
+   visibility: hidden;
+}
