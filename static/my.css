@@ -64,7 +64,7 @@ hr { display: block; height: 1px;
 }
 
 .card-img {
-    -webkit-transition: filter 300ms;
+    -webkit-transition: -webkit-filter 300ms;
     -moz-transition: filter 300ms;
     -o-transition: filter 300ms;
     transition: filter 300ms;

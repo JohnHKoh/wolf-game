@@ -35,26 +35,29 @@ io.on('connection', function(socket){
     console.log('a user connected');
     if (socket.handshake.session.username) {
         console.log('session: ' + socket.handshake.session.username);
-        var connected = users[socket.handshake.session.username];
+        var connected = users[socket.handshake.sessionID];
         if (connected) {
             connected.expire = new Date().getTime();
+            if (connected.inroom) {
+                socket.emit('alreadyInRoom');
+            }
         }
     }
 
     socket.on('disconnect', function(){
         console.log('a user disconnected');
-        var connected = users[socket.handshake.session.username];
+        var connected = users[socket.handshake.sessionID];
         var discId;
         if (connected) {
             discId = connected.inroom;
-            connected.inroom = null;
         }
 
         let timeout = 5000;
         setTimeout(function() {
-            connected = users[socket.handshake.session.username];
+            connected = users[socket.handshake.sessionID];
             if (connected) {
                 if (connected.expire + timeout < new Date().getTime() && discId === socket.id) {
+                    connected.inroom = null;
                     leaveRoom();
                 }
             }
@@ -62,6 +65,13 @@ io.on('connection', function(socket){
     });
 
     socket.on('createRoom', function(name) {
+        var connected = users[socket.handshake.sessionID];
+        if (connected) {
+            if (connected.inroom) {
+                socket.emit('alreadyInRoom');
+                return;
+            }
+        }
         var code = makeCode(4);
         while (rooms[code]) {
             code = makeCode(4);
@@ -77,7 +87,7 @@ io.on('connection', function(socket){
                 socket.emit('nameTaken');
                 return;
             }
-            var connected = users[socket.handshake.session.username];
+            var connected = users[socket.handshake.sessionID];
             if (connected) {
                 if (connected.inroom) {
                     socket.emit('alreadyInRoom');
@@ -99,25 +109,23 @@ io.on('connection', function(socket){
     });
 
     socket.on('endGame', function(code) {
+        if (socket.handshake.session.username !== rooms[code].host) return;
         rooms[code].started = false;
         io.to(code).emit('endGame');
     });
 
     socket.on('codeLinkFollowed', function(code) {
+        var connected = users[socket.handshake.sessionID];
+        if (connected) {
+            if (connected.inroom) {
+                socket.emit('alreadyInRoom');
+                return;
+            }
+        }
         if (socket.handshake.session.username) {
             if (rooms[code] && rooms[code].users.indexOf(socket.handshake.session.username) === -1) {
                 socket.emit('newJoiner', code);
                 return;
-            }
-            var connected = users[socket.handshake.session.username];
-            if (connected) {
-                if (connected.inroom) {
-                    socket.emit('alreadyInRoom');
-                    return;
-                }
-                else {
-                    connected.inroom = socket.id;
-                }
             }
             joinRoom(code, socket.handshake.session.username);
         }
@@ -127,10 +135,12 @@ io.on('connection', function(socket){
     });
 
     socket.on('startGame', function(code) {
+        if (socket.handshake.session.username !== rooms[code].host) return;
         rooms[code].started = true;
     });
 
     socket.on('assignRoles', function(values, code) {
+        if (socket.handshake.session.username !== rooms[code].host) return;
         io.to(code).emit('rolesChosen');
         var users = rooms[code].users;
         var usersAndRoles = {};
@@ -171,7 +181,7 @@ io.on('connection', function(socket){
             socket.handshake.session.username = name;
             socket.handshake.session.code = code;
         }
-        users[name] = {expire: new Date().getTime(), inroom: socket.id};
+        users[socket.handshake.sessionID] = {expire: new Date().getTime(), inroom: socket.id};
         console.log('%s joined room %s', name, code);
         socket.join(code);
         socket.emit('roomJoined', code, name, rooms[code].host, rooms[code].started);
@@ -183,7 +193,7 @@ io.on('connection', function(socket){
         var code = socket.handshake.session.code;
         delete socket.handshake.session.username;
         delete socket.handshake.session.code;
-        delete users[name];
+        delete users[socket.handshake.sessionID];
         var room = rooms[code];
         if (!room) return;
         var index = room.users.indexOf(name);

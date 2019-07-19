@@ -213,7 +213,6 @@ $(function(){
 
     $(document).on("click", "[id*='hidden']", function() {
         $($(this).data('target')).toggleClass("imgGlow");
-        $('<style></style>').appendTo($(document.body)).remove();
     });
 
     socket.on('rolesChosen', function() {
@@ -299,8 +298,10 @@ $(function(){
             $("#main").delay(250).fadeIn(1000);
             $("#joinRoom").trigger("click");
         }
+        $("#createNameFeedback").text("You are already in a game. Please leave the game before joining a new one.");
         $("#codeFeedback").text("You are already in a game. Please leave the game before joining a new one.");
         $("#code").addClass("is-invalid");
+        $('#name').addClass("is-invalid");
     });
 
 
@@ -309,6 +310,7 @@ $(function(){
             var txt = $("#choosing");
             setTimeout(function() {
                 txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+                txt.append('<i class="fas fa-eye"></i>')
                 txt.removeClass('blink');
                 txt.css({"color":"white", "display": "none"});
                 txt.fadeIn(1000);
@@ -344,6 +346,7 @@ $(function(){
     });
 
     socket.on('endGame', function() {
+        $('.imgGlow').removeClass("imgGlow");
         $('#endButton').fadeOut();
         var cards = $('#middleCards');
         cards.collapse('hide');
