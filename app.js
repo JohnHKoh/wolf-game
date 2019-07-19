@@ -32,32 +32,37 @@ io.use(sharedsession(session, {
 rooms = {};
 users = {};
 io.on('connection', function(socket){
+    var id = socket.handshake.sessionID;
+    var connected = users[id];
     console.log('a user connected');
-    if (socket.handshake.session.username) {
-        console.log('session: ' + socket.handshake.session.username);
-        var connected = users[socket.handshake.sessionID];
-        if (connected) {
-            connected.expire = new Date().getTime();
-            if (connected.inroom) {
-                socket.emit('alreadyInRoom');
-            }
+    if (connected) {
+        console.log('session: ' + id);
+        connected.expire = new Date().getTime();
+        if (connected.inroom) {
+            socket.emit('alreadyInRoom');
         }
+        else {
+            connected.inroom = socket.id;
+            joinRoom(connected.code, connected.name)
+        }
+    }
+    else {
+        socket.emit('startMain');
     }
 
     socket.on('disconnect', function(){
         console.log('a user disconnected');
-        var connected = users[socket.handshake.sessionID];
         var discId;
+        var connected = users[id];
         if (connected) {
             discId = connected.inroom;
+            if (discId === socket.id) connected.inroom = null;
         }
 
         let timeout = 5000;
         setTimeout(function() {
-            connected = users[socket.handshake.sessionID];
             if (connected) {
                 if (connected.expire + timeout < new Date().getTime() && discId === socket.id) {
-                    connected.inroom = null;
                     leaveRoom();
                 }
             }
@@ -65,7 +70,7 @@ io.on('connection', function(socket){
     });
 
     socket.on('createRoom', function(name) {
-        var connected = users[socket.handshake.sessionID];
+        var connected = users[id];
         if (connected) {
             if (connected.inroom) {
                 socket.emit('alreadyInRoom');
@@ -87,16 +92,6 @@ io.on('connection', function(socket){
                 socket.emit('nameTaken');
                 return;
             }
-            var connected = users[socket.handshake.sessionID];
-            if (connected) {
-                if (connected.inroom) {
-                    socket.emit('alreadyInRoom');
-                    return;
-                }
-                else {
-                    connected.inroom = socket.id;
-                }
-            }
             joinRoom(code, name);
         }
         else {
@@ -109,40 +104,24 @@ io.on('connection', function(socket){
     });
 
     socket.on('endGame', function(code) {
-        if (socket.handshake.session.username !== rooms[code].host) return;
+        if (users[id].name !== rooms[code].host) return;
         rooms[code].started = false;
         io.to(code).emit('endGame');
     });
 
     socket.on('codeLinkFollowed', function(code) {
-        var connected = users[socket.handshake.sessionID];
-        if (connected) {
-            if (connected.inroom) {
-                socket.emit('alreadyInRoom');
-                return;
-            }
-        }
-        if (socket.handshake.session.username) {
-            if (rooms[code] && rooms[code].users.indexOf(socket.handshake.session.username) === -1) {
-                socket.emit('newJoiner', code);
-                return;
-            }
-            joinRoom(code, socket.handshake.session.username);
-        }
-        else {
-            socket.emit('newJoiner', code);
-        }
+        if (!users[id]) socket.emit('newJoiner', code);
     });
 
     socket.on('startGame', function(code) {
-        if (socket.handshake.session.username !== rooms[code].host) return;
+        if (users[id].name !== rooms[code].host) return;
         rooms[code].started = true;
     });
 
     socket.on('assignRoles', function(values, code) {
-        if (socket.handshake.session.username !== rooms[code].host) return;
+        if (users[id].name !== rooms[code].host) return;
         io.to(code).emit('rolesChosen');
-        var users = rooms[code].users;
+        var roomUsers = rooms[code].users;
         var usersAndRoles = {};
         var rolesArray = [];
         Object.keys(values).forEach(function(key) {
@@ -152,11 +131,11 @@ io.on('connection', function(socket){
             }
         });
         shuffle(rolesArray);
-        for (let i = 0; i < users.length; i++) {
-            usersAndRoles[users[i]] = rolesArray[i];
+        for (let i = 0; i < roomUsers.length; i++) {
+            usersAndRoles[roomUsers[i]] = rolesArray[i];
         }
         rooms[code].usersAndRoles = usersAndRoles;
-        var middleRoles = rolesArray.slice(users.length);
+        var middleRoles = rolesArray.slice(roomUsers.length);
         rooms[code].middleRoles = middleRoles;
         io.to(code).emit('displayRoles', usersAndRoles, middleRoles, rooms[code].host, true);
     });
@@ -177,11 +156,11 @@ io.on('connection', function(socket){
             }
             rooms[code].users.push(name);
         }
-        if (!socket.handshake.session.username) {
-            socket.handshake.session.username = name;
-            socket.handshake.session.code = code;
+        var connected = users[id];
+        if (!connected) {
+            users[id] = {};
         }
-        users[socket.handshake.sessionID] = {expire: new Date().getTime(), inroom: socket.id};
+        users[id] = {name: name, code: code, expire: new Date().getTime(), inroom: socket.id};
         console.log('%s joined room %s', name, code);
         socket.join(code);
         socket.emit('roomJoined', code, name, rooms[code].host, rooms[code].started);
@@ -189,11 +168,9 @@ io.on('connection', function(socket){
     }
 
     function leaveRoom() {
-        var name = socket.handshake.session.username;
-        var code = socket.handshake.session.code;
-        delete socket.handshake.session.username;
-        delete socket.handshake.session.code;
-        delete users[socket.handshake.sessionID];
+        var code = users[id].code;
+        var name = users[id].name;
+        delete users[id];
         var room = rooms[code];
         if (!room) return;
         var index = room.users.indexOf(name);

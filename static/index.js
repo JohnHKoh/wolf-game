@@ -23,9 +23,11 @@ $(function(){
             window.location.pathname = "/";
         }
     }
-    else {
+
+    socket.on('startMain', function() {
         $("#main").delay(250).fadeIn(1000);
-    }
+
+    });
 
     function blink_text() {
         $('.blink').fadeOut(500);
@@ -309,7 +311,7 @@ $(function(){
         if (anim) {
             var txt = $("#choosing");
             setTimeout(function() {
-                txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]]);
+                txt.text(curUser + ', you are a ' + roles[usersAndRoles[curUser]] + ' ');
                 txt.append('<i class="fas fa-eye"></i>')
                 txt.removeClass('blink');
                 txt.css({"color":"white", "display": "none"});
