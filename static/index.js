@@ -317,8 +317,20 @@ $(function(){
         $('#name').addClass("is-invalid");
     });
 
-    socket.on('turnStart', function() {
+    socket.on('startTurn', function(role) {
+        console.log('checking to see role match');
+        console.log(role);
+        socket.emit('matchUserRole', role);
+    });
+
+    socket.on('matchedUserRoleResponse', function() {
+        console.log('role matched.');
         $("#doRole").prop("disabled", false);
+    });
+
+    socket.on('noMatchUserRoleResponse', function() {
+        console.log('role did not match.');
+        $("#doRole").prop("disabled", true);
     });
 
     var users;
@@ -327,10 +339,10 @@ $(function(){
     socket.on('displayRoles', function(thisUsers, thisHost, anim) {
         users = thisUsers;
         host = thisHost;
-        socket.emit('getUserRole', anim);
+        socket.emit('getUserRoleAnim', anim);
     });
 
-    socket.on('getUserRoleResponse', function(userRole, anim) {
+    socket.on('getUserRoleAnimResponse', function(userRole, anim) {
         var txt = $("#choosing");
         var role = $("#role");
         var group = $("#choosingGroup");

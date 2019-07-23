@@ -32,16 +32,22 @@ io.use(sharedsession(session, {
 rooms = {};
 users = {};
 nightOrder = [
-    "Doppelgänger",
-    "Werewolf",
-    "Minion",
-    "Mason",
-    "Seer",
-    "Robber",
-    "Troublemaker",
-    "Drunk",
-    "Insomniac"
+    "Doppelgängers",
+    "Werewolves",
+    "Minions",
+    "Masons",
+    "Seers",
+    "Robbers",
+    "Troublemakers",
+    "Drunks",
+    "Insomniacs"
 ];
+noWakes = [
+    "Villagers",
+    "Tanners",
+    "Hunters"
+];
+
 io.on('connection', function(socket){
     var id = socket.handshake.sessionID;
     var connected = users[id];
@@ -92,7 +98,7 @@ io.on('connection', function(socket){
         while (rooms[code]) {
             code = makeCode(4);
         }
-        rooms[code] = {host: name, users: [], started: false, userToRole: {}, middleRoles: []};
+        rooms[code] = {host: name, users: [], started: false, userToRole: {}, middleRoles: [], turn: 0};
         joinRoom(code, name);
     });
 
@@ -117,6 +123,8 @@ io.on('connection', function(socket){
     socket.on('endGame', function(code) {
         if (users[id].name !== rooms[code].host) return;
         rooms[code].started = false;
+        rooms[code].turn = 0;
+        rooms[code].order = [];
         io.to(code).emit('endGame');
     });
 
@@ -131,7 +139,9 @@ io.on('connection', function(socket){
         var roomUsers = rooms[code].users;
         var userToRole = {};
         var rolesArray = [];
+        var roles = [];
         Object.keys(values).forEach(function(key) {
+            if (values[key] > 0) roles.push(key.substring(0, key.length-5));
             while (values[key] > 0) {
                 rolesArray.push(key.substring(0, key.length-5));
                 values[key]--;
@@ -144,14 +154,45 @@ io.on('connection', function(socket){
         rooms[code].userToRole = userToRole;
         rooms[code].middleRoles = rolesArray.slice(roomUsers.length);
         io.to(code).emit('displayRoles', rooms[code].users, rooms[code].host, true);
+
+        noWakes.forEach(function(role) {
+            var index = roles.indexOf(role);
+            if (index > -1) {
+                roles.splice(index, 1);
+            }
+        });
+        roles.sort(function(x, y) {
+            return nightOrder.indexOf(x) - nightOrder.indexOf(y);
+        });
+        startTurns(roles, code);
+    });
+
+    function startTurns(roles, code) {
+        io.to(code).emit('startTurn', roles[rooms[code].turn]);
+        rooms[code].order = roles;
+        rooms[code].turn++;
+    }
+
+    socket.on('nextTurn', function(code) {
+        io.to(code).emit('startTurn', rooms[code].order[rooms[code].turn]);
+        rooms[code].turn++;
     });
 
     socket.on('getRoles', function(code) {
         socket.emit('displayRoles', rooms[code].users, rooms[code].host, false);
     });
 
-    socket.on('getUserRole', function(anim) {
-        socket.emit('getUserRoleResponse', rooms[users[id].code].userToRole[users[id].name], anim);
+    socket.on('matchUserRole', function(role) {
+        if (rooms[users[id].code].userToRole[users[id].name] === role) {
+            socket.emit('matchedUserRoleResponse');
+        }
+        else {
+            socket.emit('noMatchUserRoleResponse');
+        }
+    });
+
+    socket.on('getUserRoleAnim', function(anim) {
+        socket.emit('getUserRoleAnimResponse', rooms[users[id].code].userToRole[users[id].name], anim);
     });
 
     function joinRoom(code, name) {
