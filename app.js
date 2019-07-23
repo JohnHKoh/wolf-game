@@ -31,6 +31,17 @@ io.use(sharedsession(session, {
 
 rooms = {};
 users = {};
+nightOrder = [
+    "Doppelgänger",
+    "Werewolf",
+    "Minion",
+    "Mason",
+    "Seer",
+    "Robber",
+    "Troublemaker",
+    "Drunk",
+    "Insomniac"
+];
 io.on('connection', function(socket){
     var id = socket.handshake.sessionID;
     var connected = users[id];
@@ -81,7 +92,7 @@ io.on('connection', function(socket){
         while (rooms[code]) {
             code = makeCode(4);
         }
-        rooms[code] = {host: name, users: [], started: false, usersAndRoles: {}, middleRoles: []};
+        rooms[code] = {host: name, users: [], started: false, userToRole: {}, middleRoles: []};
         joinRoom(code, name);
     });
 
@@ -113,16 +124,12 @@ io.on('connection', function(socket){
         if (!users[id]) socket.emit('newJoiner', code);
     });
 
-    socket.on('startGame', function(code) {
-        if (users[id].name !== rooms[code].host) return;
-        rooms[code].started = true;
-    });
-
     socket.on('assignRoles', function(values, code) {
         if (users[id].name !== rooms[code].host) return;
+        rooms[code].started = true;
         io.to(code).emit('rolesChosen');
         var roomUsers = rooms[code].users;
-        var usersAndRoles = {};
+        var userToRole = {};
         var rolesArray = [];
         Object.keys(values).forEach(function(key) {
             while (values[key] > 0) {
@@ -132,16 +139,19 @@ io.on('connection', function(socket){
         });
         shuffle(rolesArray);
         for (let i = 0; i < roomUsers.length; i++) {
-            usersAndRoles[roomUsers[i]] = rolesArray[i];
+            userToRole[roomUsers[i]] = rolesArray[i];
         }
-        rooms[code].usersAndRoles = usersAndRoles;
-        var middleRoles = rolesArray.slice(roomUsers.length);
-        rooms[code].middleRoles = middleRoles;
-        io.to(code).emit('displayRoles', usersAndRoles, middleRoles, rooms[code].host, true);
+        rooms[code].userToRole = userToRole;
+        rooms[code].middleRoles = rolesArray.slice(roomUsers.length);
+        io.to(code).emit('displayRoles', rooms[code].users, rooms[code].host, true);
     });
 
     socket.on('getRoles', function(code) {
-        socket.emit('displayRoles', rooms[code].usersAndRoles, rooms[code].middleRoles, rooms[code].host, false);
+        socket.emit('displayRoles', rooms[code].users, rooms[code].host, false);
+    });
+
+    socket.on('getUserRole', function(anim) {
+        socket.emit('getUserRoleResponse', rooms[users[id].code].userToRole[users[id].name], anim);
     });
 
     function joinRoom(code, name) {

@@ -6,8 +6,16 @@ $(function(){
     var roles = {
         "Villagers":"Villager",
         "Werewolves": "Werewolf",
-        "Tanners":"Tanner",
-        "Seers":"Seer"
+        "Tanners": "Tanner",
+        "Seers": "Seer",
+        "Doppelgängers": "Doppelgänger",
+        "Minions": "Minion",
+        "Masons": "Mason",
+        "Robbers": "Robber",
+        "Troublemakers": "Troublemaker",
+        "Drunks": "Drunk",
+        "Insomniacs": "Insomniac",
+        "Hunters": "Hunter"
     };
 
 
@@ -208,7 +216,6 @@ $(function(){
         $.each($('.input-number').serializeArray(), function(i, field) {
             values[field.name] = field.value;
         });
-        socket.emit('startGame', curCode);
         socket.emit('assignRoles', values, curCode);
 
     });
@@ -310,24 +317,38 @@ $(function(){
         $('#name').addClass("is-invalid");
     });
 
+    socket.on('turnStart', function() {
+        $("#doRole").prop("disabled", false);
+    });
 
-    socket.on('displayRoles', function(usersAndRoles, middleRoles, host, anim) {
+    var users;
+    var host;
+
+    socket.on('displayRoles', function(thisUsers, thisHost, anim) {
+        users = thisUsers;
+        host = thisHost;
+        socket.emit('getUserRole', anim);
+    });
+
+    socket.on('getUserRoleResponse', function(userRole, anim) {
         var txt = $("#choosing");
         var role = $("#role");
         var group = $("#choosingGroup");
+        var icon = $("#showRole");
+        var roleText = roles[userRole];
         if (anim) {
             setTimeout(function() {
                 txt.text(curUser + ', you are a ');
-                role.text(roles[usersAndRoles[curUser]]);
-                group.append('<i id="showRole" class="fas fa-eye"></i>');
+                role.text(roleText);
                 txt.removeClass('blink');
-                txt.css({"color":"white", "display": "none"});
-                txt.fadeIn(1000);
+                icon.css('display', 'inline-block');
+                group.css({"color":"white"});
+                group.css({opacity: 0.0, visibility: "visible"}).animate({opacity: 1.0}, 1000);
                 setTimeout(function() {
                     var cards = $("#middleCards");
                     var hidden = $("[id*='hidden']");
                     hidden.css('display', 'flex');
-                    showPlayerCards(usersAndRoles);
+                    showPlayerCards(users);
                     cards.collapse('show');
                     cards.on('shown.bs.collapse', function() {
                         hidden.fadeIn(1200);
@@ -341,14 +362,14 @@ $(function(){
         }
         else {
             txt.text(curUser + ', you are a ');
-            role.text(roles[usersAndRoles[curUser]]);
-            group.append('<i id="showRole" class="fas fa-eye"></i>');
+            role.text(roleText);
             txt.removeClass('blink');
             txt.css({"color":"white"});
+            icon.css('display', 'inline-block');
             var cards = $("#middleCards");
             var hidden = $("[id*='hidden']");
             hidden.css('display', 'flex');
-            showPlayerCards(usersAndRoles);
+            showPlayerCards(users);
             cards.addClass('show');
             hidden.fadeIn(1200);
             if (curUser === host) $('#endButton').css('display', 'inline-block')
@@ -361,22 +382,25 @@ $(function(){
         var cards = $('#middleCards');
         cards.collapse('hide');
         var txt = $('#choosing');
+        $("#role").text("");
+        $("#showRole").css('display', 'none');
         txt.text('Host has ended the game.');
         cards.on('hidden.bs.collapse', function() {
             setTimeout(function() {
                 var form = $("#collapseForm");
                 form.collapse('show');
                 txt.addClass('blink');
+                $("#role").removeClass('invisible');
                 txt.text('Host is choosing roles...');
             }, 1500);
         });
     });
 
-    function showPlayerCards(usersAndRoles) {
+    function showPlayerCards(users) {
         let i = 1;
         let j = 1;
         $("#playerCards").html('');
-        Object.keys(usersAndRoles).forEach(function(key) {
+        users.forEach(function(user) {
             $("#playerCards").append(
                 '            <div class="col-4 col-md-2">\n' +
                 '                <div class="card" id="hiddenPlayer' + i + '" data-target="#playerImg' + i + '" style="background-color: unset; border: unset; visibility: hidden">\n' +
@@ -386,7 +410,7 @@ $(function(){
                 '                </div>\n' +
                 '            </div>'
             );
-            $('#playerCard' + i).text(key);
+            $('#playerCard' + i).text(user);
             setTimeout(function() {
                 $("#hiddenPlayer" + j).css({opacity: 0.0, visibility: "visible"}).animate({opacity: 1.0}, 500);
                 j++;

@@ -135,6 +135,7 @@
             <p id="choosingGroup" class="text-center lead">
                 <span id="choosing">Host is choosing roles...</span>
                 <span id="role" style="color: white;"></span>
+                <i id="showRole" class="fas fa-eye" style="display: none;"></i>
             </p>
             <div class="collapse" id="collapseForm">
                 <div class="card card-body pt-3" id="roleForm">
@@ -196,7 +197,7 @@
         <div class="row justify-content-center mt-5" id="playerCards">
         </div>
         <div class="row justify-content-center mt-3">
-            <button type="button" class="btn btn-primary">
+            <button id="doRole" type="button" class="btn btn-primary" title="Wait for your turn" disabled>
                 Do Role
             </button>
         </div>
