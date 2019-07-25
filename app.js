@@ -139,9 +139,7 @@ io.on('connection', function(socket){
         var roomUsers = rooms[code].users;
         var userToRole = {};
         var rolesArray = [];
-        var roles = [];
         Object.keys(values).forEach(function(key) {
-            if (values[key] > 0) roles.push(key.substring(0, key.length-5));
             while (values[key] > 0) {
                 rolesArray.push(key.substring(0, key.length-5));
                 values[key]--;
@@ -155,27 +153,46 @@ io.on('connection', function(socket){
         rooms[code].middleRoles = rolesArray.slice(roomUsers.length);
         io.to(code).emit('displayRoles', rooms[code].users, rooms[code].host, true);
 
-        noWakes.forEach(function(role) {
-            var index = roles.indexOf(role);
-            if (index > -1) {
-                roles.splice(index, 1);
-            }
+        var roles = rolesArray.filter(function(role) {
+           return noWakes.indexOf(role) === -1;
         });
         roles.sort(function(x, y) {
             return nightOrder.indexOf(x) - nightOrder.indexOf(y);
         });
-        startTurns(roles, code);
+        rooms[code].order = roles;
+        startTurns();
     });
 
-    function startTurns(roles, code) {
-        io.to(code).emit('startTurn', roles[rooms[code].turn]);
-        rooms[code].order = roles;
-        rooms[code].turn++;
+    function startTurns() {
+        var code = users[id].code;
+        console.log(rooms[code].order);
+        var role = rooms[code].order[rooms[code].turn];
+        var count = 0;
+        while (rooms[code].middleRoles.indexOf(role) !== -1) {
+            console.log(role + ' in middle. Skipping.');
+            count++;
+            rooms[code].turn++;
+            role = rooms[code].order[rooms[code].turn];
+        }
+        setTimeout(function() {
+            if (rooms[code].turn >= rooms[code].order.length) {
+                console.log("Turns finished");
+                return;
+            }
+            console.log('Playing role ' + role);
+            io.to(code).emit('startTurn', rooms[code].order[rooms[code].turn]);
+        }, count*5000 + 1000);
+
     }
 
-    socket.on('nextTurn', function(code) {
-        io.to(code).emit('startTurn', rooms[code].order[rooms[code].turn]);
-        rooms[code].turn++;
+
+    socket.on('nextTurn', function() {
+        var room = rooms[users[id].code];
+        if (room.userToRole[users[id].name] !== room.order[room.turn]) {
+            return;
+        }
+        room.turn++;
+        startTurns();
     });
 
     socket.on('getRoles', function(code) {
@@ -219,6 +236,7 @@ io.on('connection', function(socket){
     }
 
     function leaveRoom() {
+        if (!users[id]) return;
         var code = users[id].code;
         var name = users[id].name;
         delete users[id];

@@ -33,8 +33,8 @@ $(function(){
     }
 
     socket.on('startMain', function() {
+        if ($("#game:visible").length > 0) window.location.reload();
         $("#main").delay(250).fadeIn(1000);
-
     });
 
     function blink_text() {
@@ -216,6 +216,7 @@ $(function(){
         $.each($('.input-number').serializeArray(), function(i, field) {
             values[field.name] = field.value;
         });
+        $('#doRole').prop('disabled', true);
         socket.emit('assignRoles', values, curCode);
 
     });
@@ -226,6 +227,11 @@ $(function(){
 
     $(document).on("click", "#showRole", function() {
         $("#role").toggleClass('invisible');
+    });
+
+    $("#doRole").on("click", function() {
+        $('#doRole').prop('disabled', true);
+        socket.emit('nextTurn');
     });
 
     socket.on('rolesChosen', function() {
@@ -400,7 +406,7 @@ $(function(){
         cards.on('hidden.bs.collapse', function() {
             setTimeout(function() {
                 var form = $("#collapseForm");
-                form.collapse('show');
+                if (curUser === host) form.collapse('show');
                 txt.addClass('blink');
                 $("#role").removeClass('invisible');
                 txt.text('Host is choosing roles...');
